@@ -5,54 +5,57 @@ const validator = require("validator");
 
 const Task = require("./task");
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  age: {
-    type: Number,
-    default: 0,
-    validate(value) {
-      if (value < 0) {
-        throw new Error("Age must be a positive number");
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    age: {
+      type: Number,
+      default: 0,
+      validate(value) {
+        if (value < 0) {
+          throw new Error("Age must be a positive number");
+        }
       }
-    }
-  },
-  email: {
-    type: String,
-    unique: true,
-    required: true,
-    trim: true,
-    lowercase: true,
-    validate(value) {
-      if (!validator.isEmail(value)) {
-        throw new Error("Email is invalid");
+    },
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+      trim: true,
+      lowercase: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Email is invalid");
+        }
       }
-    }
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 6,
-    trim: true,
-    validate(value) {
-      const formatted = value.toLowerCase();
-      if (formatted.includes("password")) {
-        throw new Error("Invalid password");
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+      trim: true,
+      validate(value) {
+        const formatted = value.toLowerCase();
+        if (formatted.includes("password")) {
+          throw new Error("Invalid password");
+        }
       }
-    }
-  },
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true
+    },
+    tokens: [
+      {
+        token: {
+          type: String,
+          required: true
+        }
       }
-    }
-  ]
-});
+    ]
+  },
+  { timestamps: true }
+);
 
 userSchema.virtual("tasks", {
   ref: "Task",
