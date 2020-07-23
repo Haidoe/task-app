@@ -26,8 +26,14 @@ router.get("/tasks", auth, async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit) : 2;
   const page = req.query.page ? parseInt(req.query.page) : 1;
   const skip = (page - 1) * limit;
+  const sort = {};
 
-  const options = { limit, skip };
+  if (req.query.sortBy) {
+    const [sortBy, direction] = req.query.sortBy.split(":");
+    sort[sortBy] = direction === "desc" ? -1 : 1;
+  }
+
+  const options = { limit, skip, sort };
 
   try {
     await req.user.populate({ path: "tasks", match, options }).execPopulate();
