@@ -2,6 +2,7 @@ const express = require("express");
 const auth = require("../middlewares/auth");
 const User = require("../models/user");
 const multer = require("multer");
+const sharp = require("sharp");
 
 const upload = multer({
   limits: {
@@ -111,7 +112,12 @@ router.post(
   auth,
   upload.single("avatar"),
   async (req, res) => {
-    req.user.avatar = req.file.buffer;
+    const buffer = await sharp(req.file.buffer)
+      .png()
+      .resize({ width: 250, height: 250 })
+      .toBuffer();
+
+    req.user.avatar = buffer;
 
     await req.user.save();
     res.send();
@@ -125,6 +131,23 @@ router.delete("/users/me/avatar", auth, async (req, res) => {
   req.user.avatar = undefined;
   await req.user.save();
   res.send();
+});
+
+router.get("/users/:id/avatar", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findById(id);
+
+    if (!user || !user.avatar) {
+      throw new Error();
+    }
+
+    res.set("Content-Type", "image/jpg");
+    res.send(user.avatar);
+  } catch (error) {
+    res.status(404).send();
+  }
 });
 
 module.exports = router;
