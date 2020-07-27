@@ -1,6 +1,21 @@
 const express = require("express");
 const auth = require("../middlewares/auth");
 const User = require("../models/user");
+const multer = require("multer");
+
+const upload = multer({
+  dest: "avatars",
+  limits: {
+    fileSize: 1000000
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error("Please upload a PNG or JPG Images"));
+    }
+
+    cb(undefined, true);
+  }
+});
 
 const router = new express.Router();
 
@@ -91,5 +106,16 @@ router.delete("/users/me", auth, async (req, res) => {
     res.status(500).send();
   }
 });
+
+router.post(
+  "/users/me/avatar",
+  upload.single("avatar"),
+  async (req, res) => {
+    res.send();
+  },
+  (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+  }
+);
 
 module.exports = router;
